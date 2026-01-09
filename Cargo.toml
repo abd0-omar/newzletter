@@ -64,6 +64,7 @@ tower-sessions-redis-store = { version = "0.16.0", features = [
 # axum-flash = "0.8.0"
 axum-messages = "0.8.0"
 time = "0.3.41"
+serde_urlencoded = "0.7.1"
 
 [dev-dependencies]
 quickcheck = "1.0.3"

@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        DELETE FROM issue_delivery_queue\n        WHERE rowid IN (\n            SELECT rowid\n            FROM issue_delivery_queue\n            LIMIT 1\n        )\n        RETURNING newsletter_issue_uuid, subscriber_email\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "newsletter_issue_uuid",
+        "ordinal": 0,
+        "type_info": "Text"
+      },
+      {
+        "name": "subscriber_email",
+        "ordinal": 1,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "1b4566db54cb35c5159d0ece53fdda501cae61f2dbde384791544ef87791c12f"
+}

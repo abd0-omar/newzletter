@@ -4,6 +4,7 @@ use config::{Config, ConfigError};
 use secrecy::SecretString;
 use serde::Deserialize;
 // use serde_aux::field_attributes::deserialize_number_from_string;
+use crate::email_client::EmailClient;
 use sqlx::{
     sqlite::{SqliteAutoVacuum, SqliteConnectOptions, SqliteJournalMode, SqliteSynchronous},
     SqlitePool,
@@ -163,5 +164,13 @@ impl TryFrom<String> for Environment {
                 other
             )),
         }
+    }
+}
+
+impl EmailClientSettings {
+    pub fn client(self) -> EmailClient {
+        let sender = self.sender().expect("Invalid sender email address.");
+        let timeout = self.timeout();
+        EmailClient::new(sender, self.base_url, self.authorization_token, timeout)
     }
 }

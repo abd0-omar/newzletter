@@ -5,3 +5,6 @@ newsletter.db-wal
 newsletter.db.tmp-shm
 newsletter.db.tmp-wal
 aws_if_I_exposed_by_mistake_do_not_steal_thank_you.env
+
+# Stakpak session files
+.stakpak/session*

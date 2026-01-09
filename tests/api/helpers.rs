@@ -6,14 +6,17 @@ use argon2::{
 };
 use newzletter::{
     configuration::{configure_database, get_configuration},
+    issue_delivery_worker::try_execute_task,
     startup::Application,
     telemetry::{get_subscriber, init_subscriber},
 };
+use newzletter::{email_client::EmailClient, issue_delivery_worker::ExecutionOutcome};
 use serde::Serialize;
 use sqlx::sqlite::SqlitePool;
 use tokio::fs::remove_file;
 use uuid::Uuid;
 use wiremock::MockServer;
+
 // Ensure that the `tracing` stack is only initialised once using `once_cell`
 static TRACING: LazyLock<()> = LazyLock::new(|| {
     let default_filter_level = "info".to_string();
@@ -36,6 +39,7 @@ pub struct TestApp {
     pub db_path: String,
     pub test_user: TestUser,
     pub api_client: reqwest::Client,
+    pub email_client: EmailClient,
 }
 
 #[derive(Serialize)]
@@ -174,6 +178,18 @@ impl TestApp {
         ConfirmationLinks { html, plain_text }
     }
 
+    pub async fn dispatch_all_pending_emails(&self) {
+        loop {
+            if let ExecutionOutcome::EmptyQueue =
+                try_execute_task(&self.db_pool, &self.email_client)
+                    .await
+                    .unwrap()
+            {
+                break;
+            }
+        }
+    }
+
     pub async fn cleanup_test_db(&self) -> Result<(), sqlx::Error> {
         remove_file(&format!("{}.db", self.db_path)).await?;
         Ok(())
@@ -196,7 +212,7 @@ pub async fn spawn_app() -> TestApp {
         configuration.database.create_if_missing = true;
         configuration.database.journal_mode = "MEMORY".to_string();
         configuration.database.synchronous = "OFF".to_string();
-        configuration.database.busy_timeout = 1;
+        configuration.database.busy_timeout = 5;
         configuration.database.foreign_keys = true;
         configuration.database.auto_vacuum = "NONE".to_string();
         configuration.database.page_size = 4096;
@@ -241,6 +257,7 @@ pub async fn spawn_app() -> TestApp {
         email_server,
         test_user: TestUser::generate(),
         api_client: client,
+        email_client: configuration.email_client.client(),
     };
 
     test_app.test_user.store(&db_pool).await;

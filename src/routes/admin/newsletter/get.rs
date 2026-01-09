@@ -5,6 +5,7 @@ use rinja_axum::Template;
 #[derive(Template)]
 #[template(path = "publish_newsletter/index.html")]
 struct PublishNewsletterTemplate {
+    idempotency_key: uuid::Uuid,
     errors: Vec<String>,
 }
 
@@ -14,6 +15,7 @@ pub async fn publish_newsletter_form(
 ) -> Result<axum::response::Response, axum::response::Response> {
     Ok(Html(
         PublishNewsletterTemplate {
+            idempotency_key: uuid::Uuid::new_v4(),
             errors: messages.into_iter().map(|m| m.message).collect(),
         }
         .render()
