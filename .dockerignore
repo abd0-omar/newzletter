@@ -3,7 +3,7 @@
 target/
 tests/
 Dockerfile
-migrations/
+# migrations/
 scripts/a_place_for_test_dbs_to_spawn_in_it,supposed_to_be_empty_cuz_tests_terminate_after_success_execution
 aws_if_I_exposed_by_mistake_do_not_steal_thank_you.env
 newsletter.db

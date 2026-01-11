@@ -7,6 +7,7 @@ async fn create_unconfirmed_subscriber(app: &TestApp) -> ConfirmationLinks {
     let body = FormData {
         name: Some("abood".to_string()),
         email: Some("3la_el_7doood@yahoo.com".to_string()),
+        cf_turnstile_response: Some("test-token".to_string()),
     };
 
     let _mock_guard = Mock::given(path("/email"))

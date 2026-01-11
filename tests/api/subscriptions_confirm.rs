@@ -27,6 +27,7 @@ async fn the_link_returned_by_subscribe_returns_a_200_if_called() {
     let fake_user_form_data = FormData {
         name: Some("abood".to_string()),
         email: Some("3la_el_7doood@yahoo.com".to_string()),
+        cf_turnstile_response: Some("test-token".to_string()),
     };
 
     Mock::given(path("/email"))
@@ -55,6 +56,7 @@ async fn clicking_on_the_confirmation_link_confirms_a_subscriber() {
     let body = FormData {
         name: Some("abood".to_string()),
         email: Some("3la_el_7doood@yahoo.com".to_string()),
+        cf_turnstile_response: Some("test-token".to_string()),
     };
 
     Mock::given(path("/email"))

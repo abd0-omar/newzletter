@@ -1,4 +1,3 @@
-use crate::routes::subscribe_form;
 use std::sync::Arc;
 
 use axum::{
@@ -39,6 +38,7 @@ pub struct AppState {
     pub pool: SqlitePool,
     pub email_client: EmailClient,
     pub base_url: ApplicationBaseUrl,
+    pub turnstile_secret: SecretString,
     _hmac_secret: HmacSecret,
 }
 
@@ -58,6 +58,7 @@ pub async fn run(
     base_url: String,
     _hmac_secret: SecretString,
     redis_uri: SecretString,
+    turnstile_secret: SecretString,
 ) -> anyhow::Result<Serve<TcpListener, Router, Router>> {
     // redis sessions
     let redis_url = redis_uri.expose_secret();
@@ -91,6 +92,7 @@ pub async fn run(
         pool,
         email_client,
         base_url: ApplicationBaseUrl(base_url),
+        turnstile_secret,
         _hmac_secret: HmacSecret(SecretString::from(_hmac_secret)),
     });
 
@@ -100,7 +102,6 @@ pub async fn run(
         .route("/login", post(login))
         .route("/health_check", get(health_check))
         .route("/subscriptions", post(subscribe))
-        .route("/subscriptions", get(subscribe_form))
         .route("/subscriptions/confirm", get(confirm))
         .route("/blog", get(blog_index))
         .route("/blog/{slug}", get(blog_post))
@@ -181,6 +182,7 @@ impl Application {
             configuration.application.base_url,
             configuration.application.hmac_secret,
             configuration.redis_uri,
+            configuration.application.turnstile_secret_key,
         )
         .await?;
 

@@ -51,8 +51,8 @@ impl EmailClient {
             from: self.sender.as_ref(),
             to: recipient.as_ref(),
             subject,
-            html_body: text_content,
-            text_body: html_content,
+            html_body: html_content,
+            text_body: text_content,
         };
         self.http_client
             .post(url)

@@ -46,6 +46,8 @@ pub struct TestApp {
 pub struct FormData {
     pub name: Option<String>,
     pub email: Option<String>,
+    #[serde(rename = "cf-turnstile-response")]
+    pub cf_turnstile_response: Option<String>,
 }
 
 pub struct ConfirmationLinks {

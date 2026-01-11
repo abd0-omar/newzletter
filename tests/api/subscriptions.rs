@@ -7,12 +7,13 @@ use wiremock::{
 use crate::helpers::{spawn_app, FormData};
 
 #[tokio::test]
-async fn subscribe_returns_a_200_for_valid_form_data() {
+async fn subscribe_returns_a_303_for_valid_form_data() {
     // Arrange
     let app = spawn_app().await;
     let fake_user_form_data = FormData {
         name: Some("abood".to_string()),
         email: Some("3la_el_7doood@yahoo.com".to_string()),
+        cf_turnstile_response: Some("test-token".to_string()),
     };
 
     Mock::given(path("/email"))
@@ -25,7 +26,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
     let response = app.post_subscriptions(&fake_user_form_data).await;
 
     // Assert
-    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(response.status(), StatusCode::SEE_OTHER);
 
     app.cleanup_test_db().await.unwrap();
 }
@@ -37,6 +38,7 @@ async fn subscribe_persists_the_new_subscriber() {
     let fake_user_form_data = FormData {
         name: Some("abood".to_string()),
         email: Some("3la_el_7doood@yahoo.com".to_string()),
+        cf_turnstile_response: Some("test-token".to_string()),
     };
 
     // Act
@@ -62,6 +64,7 @@ async fn subscribe_fails_if_there_is_a_fatal_database_error() {
     let body = FormData {
         name: Some("abood".to_string()),
         email: Some("3la_el_7doood@yahoo.com".to_string()),
+        cf_turnstile_response: Some("test-token".to_string()),
     };
     // Sabotage the database
     sqlx::query!("ALTER TABLE subscriptions RENAME TO broken_subscriptions;")
@@ -76,8 +79,12 @@ async fn subscribe_fails_if_there_is_a_fatal_database_error() {
     // Act
     let response = app.post_subscriptions(&body).await;
 
-    // Assert
-    assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    // Assert - errors now redirect back to home with error param
+    assert_eq!(response.status(), StatusCode::SEE_OTHER);
+    assert_eq!(
+        response.headers().get("Location").unwrap(),
+        "/?error=server"
+    );
 
     app.cleanup_test_db().await.unwrap();
 }
@@ -93,6 +100,7 @@ pub async fn subscribe_returns_a_422_when_data_is_missing() {
             FormData {
                 name: Some("abood".to_string()),
                 email: None,
+                cf_turnstile_response: Some("test-token".to_string()),
             },
             "missing the email",
         ),
@@ -100,6 +108,7 @@ pub async fn subscribe_returns_a_422_when_data_is_missing() {
             FormData {
                 name: None,
                 email: Some("email@email_proivderdotcom".to_string()),
+                cf_turnstile_response: Some("test-token".to_string()),
             },
             "missing the name",
         ),
@@ -107,6 +116,7 @@ pub async fn subscribe_returns_a_422_when_data_is_missing() {
             FormData {
                 name: None,
                 email: None,
+                cf_turnstile_response: Some("test-token".to_string()),
             },
             "missing both",
         ),
@@ -135,6 +145,7 @@ async fn subscribe_returns_a_400_when_fields_are_present_but_invalid() {
             FormData {
                 name: Some("".to_string()),
                 email: Some("hamada123@yahoo.com".to_string()),
+                cf_turnstile_response: Some("test-token".to_string()),
             },
             "name present (gift) but empty",
         ),
@@ -142,6 +153,7 @@ async fn subscribe_returns_a_400_when_fields_are_present_but_invalid() {
             FormData {
                 name: Some("hamada".to_string()),
                 email: Some("".to_string()),
+                cf_turnstile_response: Some("test-token".to_string()),
             },
             "empty email",
         ),
@@ -149,6 +161,7 @@ async fn subscribe_returns_a_400_when_fields_are_present_but_invalid() {
             FormData {
                 name: Some("hamada".to_string()),
                 email: Some("definitely-not-(blitzcrank)-an-email".to_string()),
+                cf_turnstile_response: Some("test-token".to_string()),
             },
             "invalid email",
         ),
@@ -158,11 +171,17 @@ async fn subscribe_returns_a_400_when_fields_are_present_but_invalid() {
         // Act
         let response = app.post_subscriptions(&form_data).await;
 
-        // Assert
+        // Assert - validation errors now redirect back to home with error param
         assert_eq!(
-            StatusCode::BAD_REQUEST,
+            StatusCode::SEE_OTHER,
             response.status(),
-            "The API did not return a 200 OK when the payload was {}.",
+            "The API did not return a 303 redirect when the payload was {}.",
+            description
+        );
+        assert_eq!(
+            response.headers().get("Location").unwrap(),
+            "/?error=validation",
+            "The API did not redirect to /?error=validation when the payload was {}.",
             description
         );
     }
@@ -185,6 +204,7 @@ async fn subscribe_sends_a_confirmation_email_for_valid_data() {
     let form_data = FormData {
         name: Some("abdo_test".to_string()),
         email: Some("abdo_test@gmail.com".to_string()),
+        cf_turnstile_response: Some("test-token".to_string()),
     };
     // Act
     app.post_subscriptions(&form_data).await;
@@ -201,6 +221,7 @@ async fn subscribe_sends_a_confirmation_email_with_a_link() {
     let body = FormData {
         name: Some("abood".to_string()),
         email: Some("3la_el_7doood@yahoo.com".to_string()),
+        cf_turnstile_response: Some("test-token".to_string()),
     };
 
     Mock::given(path("/email"))

@@ -1,10 +1,14 @@
 use std::sync::Arc;
 
 use anyhow::Context;
-use axum::{extract::State, response::IntoResponse, Form};
+use axum::{
+    extract::State,
+    response::{IntoResponse, Redirect},
+    Form,
+};
 use chrono::Utc;
 use rand::{distr::Alphanumeric, rng, Rng};
-use reqwest::StatusCode;
+use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 use sqlx::{Sqlite, Transaction};
 use uuid::Uuid;
@@ -19,6 +23,8 @@ use crate::{
 pub struct FormData {
     name: String,
     email: String,
+    #[serde(rename = "cf-turnstile-response")]
+    cf_turnstile_response: String,
 }
 
 impl TryFrom<FormData> for NewSubscriber {
@@ -35,6 +41,8 @@ impl TryFrom<FormData> for NewSubscriber {
 pub enum SubscribeError {
     #[error("{0}")]
     ValidationError(String),
+    #[error("Turnstile verification failed")]
+    TurnstileError,
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -50,14 +58,17 @@ impl IntoResponse for SubscribeError {
         match self {
             SubscribeError::ValidationError(e) => {
                 tracing::error!(cause_chain = ?e);
-                StatusCode::BAD_REQUEST
+                Redirect::to("/?error=validation").into_response()
+            }
+            SubscribeError::TurnstileError => {
+                tracing::error!("Turnstile verification failed");
+                Redirect::to("/?error=captcha").into_response()
             }
             SubscribeError::UnexpectedError(e) => {
                 tracing::error!(cause_chain = ?e);
-                StatusCode::INTERNAL_SERVER_ERROR
+                Redirect::to("/?error=server").into_response()
             }
         }
-        .into_response()
     }
 }
 
@@ -73,15 +84,32 @@ pub async fn subscribe(
     State(app_state): State<Arc<AppState>>,
     Form(form): Form<FormData>,
 ) -> Result<impl IntoResponse, SubscribeError> {
+    // Verify Turnstile token first
+    verify_turnstile(&app_state.turnstile_secret, &form.cf_turnstile_response)
+        .await
+        .map_err(|_| SubscribeError::TurnstileError)?;
+
     let new_subscriber = form.try_into().map_err(SubscribeError::ValidationError)?;
     let mut transaction = app_state
         .pool
         .begin()
         .await
         .context("Failed to acquire a Postgres connection from the pool")?;
-    let subscriber_id = insert_subscriber(&mut transaction, &new_subscriber)
-        .await
-        .context("Failed to insert new subscriber in the database.")?;
+
+    // Try to insert subscriber - if email already exists, just redirect to success
+    // (don't leak information about who's subscribed)
+    let subscriber_id = match insert_subscriber(&mut transaction, &new_subscriber).await {
+        Ok(id) => id,
+        Err(e) => {
+            // Check if it's a UNIQUE constraint error (duplicate email)
+            if e.to_string().contains("UNIQUE constraint failed") {
+                tracing::info!("Email already subscribed, redirecting to success");
+                return Ok(Redirect::to("/?subscribed=true"));
+            }
+            return Err(anyhow::anyhow!("Failed to insert new subscriber: {}", e).into());
+        }
+    };
+
     let subscription_token = generate_subscription_token();
     store_token(&mut transaction, subscriber_id, &subscription_token)
         .await
@@ -99,7 +127,7 @@ pub async fn subscribe(
     .await
     .context("Failed to send a confirmation email.")?;
 
-    Ok(StatusCode::OK)
+    Ok(Redirect::to("/?subscribed=true"))
 }
 
 fn generate_subscription_token() -> String {
@@ -108,6 +136,41 @@ fn generate_subscription_token() -> String {
         .map(char::from)
         .take(25)
         .collect()
+}
+
+#[derive(Deserialize)]
+struct TurnstileResponse {
+    success: bool,
+}
+
+#[tracing::instrument(name = "Verifying Turnstile token", skip(secret, response_token))]
+async fn verify_turnstile(
+    secret: &SecretString,
+    response_token: &str,
+) -> Result<(), anyhow::Error> {
+    let client = reqwest::Client::new();
+    let response = client
+        .post("https://challenges.cloudflare.com/turnstile/v0/siteverify")
+        .form(&[
+            ("secret", secret.expose_secret()),
+            ("response", response_token),
+        ])
+        .send()
+        .await
+        .context("Failed to send Turnstile verification request")?;
+
+    let turnstile_response: TurnstileResponse = response
+        .json()
+        .await
+        .context("Failed to parse Turnstile response")?;
+
+    if turnstile_response.success {
+        tracing::info!("Turnstile verification successful");
+        Ok(())
+    } else {
+        tracing::warn!("Turnstile verification failed");
+        anyhow::bail!("Turnstile verification failed")
+    }
 }
 
 #[tracing::instrument(

@@ -1,20 +1,20 @@
-async function s(){const n=document.getElementById("xkcd-container"),e=document.getElementById("comic-number");if(!(!n||!e))try{n.innerHTML=`
+async function a(){const n=document.getElementById("xkcd-container"),o=document.getElementById("comic-number");if(!(!n||!o))try{n.innerHTML=`
 						<div class="flex justify-center items-center min-h-64">
 							<span class="loading loading-spinner loading-lg text-primary"></span>
 						</div>
-					`,e.textContent="Loading...";const o=await(await fetch("https://corsproxy.io/?https://xkcd.com/info.0.json")).json(),a=Math.floor(Math.random()*o.num)+1,t=await(await fetch(`https://corsproxy.io/?https://xkcd.com/${a}/info.0.json`)).json();e.textContent=`#${t.num}`,n.innerHTML=`
+					`,o.textContent="Loading...";const s=await(await fetch("https://corsproxy.io/?https://xkcd.com/info.0.json")).json(),r=Math.floor(Math.random()*s.num)+1,e=await(await fetch(`https://corsproxy.io/?https://xkcd.com/${r}/info.0.json`)).json();o.textContent=`#${e.num}`,n.innerHTML=`
 						<h3 class="text-xl font-bold mb-4 text-secondary">
-							${t.title}
+							${e.title}
 						</h3>
 						
 						<div class="mockup-browser bg-base-300 border border-base-300 mb-6">
 							<div class="mockup-browser-toolbar">
-								<div class="input text-sm">xkcd.com/${t.num}</div>
+								<div class="input text-sm">xkcd.com/${e.num}</div>
 							</div>
 							<div class="bg-base-100 px-6 py-8">
 								<img
-									src="${t.img}"
-									alt="${t.alt}"
+									src="${e.img}"
+									alt="${e.alt}"
 									class="mx-auto max-w-full h-auto"
 									loading="lazy"
 								/>
@@ -27,7 +27,7 @@ async function s(){const n=document.getElementById("xkcd-container"),e=document.
 							</svg>
 							<div class="text-left">
 								<h4 class="font-semibold">Alt Text:</h4>
-								<p class="text-sm">${t.alt}</p>
+								<p class="text-sm">${e.alt}</p>
 							</div>
 						</div>
 						
@@ -35,7 +35,7 @@ async function s(){const n=document.getElementById("xkcd-container"),e=document.
 							<div class="join">
 								<div class="tooltip" data-tip="Published Date">
 									<button class="btn join-item btn-outline btn-sm">
-										📅 ${t.day}/${t.month}/${t.year}
+										📅 ${e.day}/${e.month}/${e.year}
 									</button>
 								</div>
 								<button class="btn join-item btn-secondary btn-sm" id="new-random-btn">
@@ -45,7 +45,7 @@ async function s(){const n=document.getElementById("xkcd-container"),e=document.
 									New Random
 								</button>
 								<a
-									href="https://xkcd.com/${t.num}"
+									href="https://xkcd.com/${e.num}"
 									target="_blank"
 									rel="noopener noreferrer"
 									class="btn join-item btn-primary btn-sm"
@@ -57,7 +57,7 @@ async function s(){const n=document.getElementById("xkcd-container"),e=document.
 								</a>
 							</div>
 						</div>
-					`;const r=document.getElementById("new-random-btn");r&&r.addEventListener("click",s)}catch(i){console.error("Error fetching XKCD comic:",i),n.innerHTML=`
+					`;const i=document.getElementById("new-random-btn");i&&i.addEventListener("click",a)}catch(t){console.error("Error fetching XKCD comic:",t),n.innerHTML=`
 						<div class="alert alert-error">
 							<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 w-6 h-6" fill="none" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -75,4 +75,4 @@ async function s(){const n=document.getElementById("xkcd-container"),e=document.
 								Try Again
 							</button>
 						</div>
-					`;const o=document.getElementById("try-again-btn");o&&o.addEventListener("click",s),e.textContent="Error"}}document.addEventListener("DOMContentLoaded",s);
+					`;const s=document.getElementById("try-again-btn");s&&s.addEventListener("click",a),o.textContent="Error"}}document.addEventListener("DOMContentLoaded",()=>{a();const n=new URLSearchParams(window.location.search);if(n.get("subscribed")==="true"){const t=document.getElementById("subscription-success");t&&(t.classList.remove("hidden"),t.scrollIntoView({behavior:"smooth",block:"center"}),window.history.replaceState({},"","/"))}const o=n.get("error");if(o){const t=document.getElementById("subscription-error"),s=document.getElementById("error-message");if(t&&s){const r={validation:"Invalid name or email. Please check your input.",captcha:"Captcha verification failed. Please try again.",server:"Server error. Please try again later."};s.textContent=r[o]||"Something went wrong. Please try again.",t.classList.remove("hidden"),t.scrollIntoView({behavior:"smooth",block:"center"}),window.history.replaceState({},"","/")}}});

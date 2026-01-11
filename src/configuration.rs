@@ -30,6 +30,7 @@ pub struct ApplicationSettings {
     pub host: String,
     pub base_url: String,
     pub hmac_secret: SecretString,
+    pub turnstile_secret_key: SecretString,
 }
 
 #[derive(Deserialize, Clone)]
@@ -53,8 +54,8 @@ pub async fn configure_database(config: &DatabaseSettings) -> anyhow::Result<Sql
     // options -> pool -> migrate
     let options = config.connect_options()?;
     let pool = SqlitePool::connect_with(options).await?;
-    // no need to migrate in prod, will migrate manually
-    // sqlx::migrate!("./migrations").run(&pool).await?;
+    // Run migrations automatically
+    sqlx::migrate!("./migrations").run(&pool).await?;
     Ok(pool)
 }
 

@@ -2,6 +2,8 @@ application:
   port: 8080
   host: 0.0.0.0
   hmac_secret: "super-long-and-secret-random-key-needed-to-verify-message-integrity"
+  # Cloudflare Turnstile - test key that always passes (for development)
+  turnstile_secret_key: "1x0000000000000000000000000000000AA"
 database:
   database_path: "newsletter"
   create_if_missing: false

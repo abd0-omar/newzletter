@@ -25,6 +25,7 @@ This project adapts the "Zero to Production in Rust" book's Actix-Web + PostgreS
 
 - **Subscription System**
   - Email subscription with form validation
+  - **Cloudflare Turnstile** bot protection
   - Double opt-in via confirmation emails
   - Subscription tokens for secure confirmation
   - Status tracking (pending → confirmed)
@@ -269,6 +270,8 @@ cargo test
 | `APP_DATABASE__DATABASE_PATH` | SQLite file path |
 | `APP_REDIS_URI` | Redis connection string |
 | `APP_EMAIL_CLIENT__AUTHORIZATION_TOKEN` | Postmark API token |
+| `APP_APPLICATION__TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret key |
+| `PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key (frontend) |
 
 ## Key Dependencies
 
