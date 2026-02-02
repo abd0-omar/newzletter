@@ -1,8 +1,8 @@
-async function i(){const o=document.getElementById("xkcd-container"),s=document.getElementById("comic-number");if(!(!o||!s))try{o.innerHTML=`
+async function c(){const o=document.getElementById("xkcd-container"),r=document.getElementById("comic-number");if(!(!o||!r))try{o.innerHTML=`
 						<div class="flex justify-center items-center min-h-64">
 							<span class="loading loading-spinner loading-lg text-primary"></span>
 						</div>
-					`,s.textContent="Loading...";const t=m=>`https://api.allorigins.win/get?url=${encodeURIComponent(m)}`,n=await fetch(t("https://xkcd.com/info.0.json"));if(!n.ok)throw new Error(`Failed to fetch latest comic: ${n.status}`);const r=await n.json(),a=JSON.parse(r.contents);if(!a.num||typeof a.num!="number")throw new Error("Invalid comic data received");const l=Math.floor(Math.random()*a.num)+1,d=await(await fetch(t(`https://xkcd.com/${l}/info.0.json`))).json(),e=JSON.parse(d.contents);s.textContent=`#${e.num}`,o.innerHTML=`
+					`,r.textContent="Loading...";async function t(m){const h=[a=>({url:`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(a)}`,parse:s=>s.json()}),a=>({url:`https://api.allorigins.win/raw?url=${encodeURIComponent(a)}`,parse:s=>s.json()})];for(const a of h)try{const{url:s,parse:u}=a(m),d=await fetch(s);if(d.ok)return await u(d)}catch{continue}throw new Error("All proxies failed")}const n=await t("https://xkcd.com/info.0.json");if(!n.num||typeof n.num!="number")throw new Error("Invalid comic data received");const i=Math.floor(Math.random()*n.num)+1,e=await t(`https://xkcd.com/${i}/info.0.json`);r.textContent=`#${e.num}`,o.innerHTML=`
 						<h3 class="text-xl font-bold mb-4 text-secondary">
 							${e.title}
 						</h3>
@@ -57,7 +57,7 @@ async function i(){const o=document.getElementById("xkcd-container"),s=document.
 								</a>
 							</div>
 						</div>
-					`;const c=document.getElementById("new-random-btn");c&&c.addEventListener("click",i)}catch(t){console.error("Error fetching XKCD comic:",t),o.innerHTML=`
+					`;const l=document.getElementById("new-random-btn");l&&l.addEventListener("click",c)}catch(t){console.error("Error fetching XKCD comic:",t),o.innerHTML=`
 						<div class="alert alert-error">
 							<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 w-6 h-6" fill="none" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -75,4 +75,4 @@ async function i(){const o=document.getElementById("xkcd-container"),s=document.
 								Try Again
 							</button>
 						</div>
-					`;const n=document.getElementById("try-again-btn");n&&n.addEventListener("click",i),s.textContent="Error"}}document.addEventListener("DOMContentLoaded",()=>{i();const o=new URLSearchParams(window.location.search);if(o.get("subscribed")==="true"){const t=document.getElementById("subscription-success");t&&(t.classList.remove("hidden"),t.scrollIntoView({behavior:"smooth",block:"center"}),window.history.replaceState({},"","/"))}const s=o.get("error");if(s){const t=document.getElementById("subscription-error"),n=document.getElementById("error-message");if(t&&n){const r={validation:"Invalid name or email. Please check your input.",captcha:"Captcha verification failed. Please try again.",server:"Server error. Please try again later."};n.textContent=r[s]||"Something went wrong. Please try again.",t.classList.remove("hidden"),t.scrollIntoView({behavior:"smooth",block:"center"}),window.history.replaceState({},"","/")}}});
+					`;const n=document.getElementById("try-again-btn");n&&n.addEventListener("click",c),r.textContent="Error"}}document.addEventListener("DOMContentLoaded",()=>{c();const o=new URLSearchParams(window.location.search);if(o.get("subscribed")==="true"){const t=document.getElementById("subscription-success");t&&(t.classList.remove("hidden"),t.scrollIntoView({behavior:"smooth",block:"center"}),window.history.replaceState({},"","/"))}const r=o.get("error");if(r){const t=document.getElementById("subscription-error"),n=document.getElementById("error-message");if(t&&n){const i={validation:"Invalid name or email. Please check your input.",captcha:"Captcha verification failed. Please try again.",server:"Server error. Please try again later."};n.textContent=i[r]||"Something went wrong. Please try again.",t.classList.remove("hidden"),t.scrollIntoView({behavior:"smooth",block:"center"}),window.history.replaceState({},"","/")}}});
