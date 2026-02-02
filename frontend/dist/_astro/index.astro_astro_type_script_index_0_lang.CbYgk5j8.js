@@ -1,8 +1,8 @@
-async function a(){const n=document.getElementById("xkcd-container"),o=document.getElementById("comic-number");if(!(!n||!o))try{n.innerHTML=`
+async function a(){const o=document.getElementById("xkcd-container"),s=document.getElementById("comic-number");if(!(!o||!s))try{o.innerHTML=`
 						<div class="flex justify-center items-center min-h-64">
 							<span class="loading loading-spinner loading-lg text-primary"></span>
 						</div>
-					`,o.textContent="Loading...";const s=await(await fetch("https://corsproxy.io/?https://xkcd.com/info.0.json")).json(),r=Math.floor(Math.random()*s.num)+1,e=await(await fetch(`https://corsproxy.io/?https://xkcd.com/${r}/info.0.json`)).json();o.textContent=`#${e.num}`,n.innerHTML=`
+					`,s.textContent="Loading...";const t=await fetch("https://corsproxy.io/?https://xkcd.com/info.0.json");if(!t.ok)throw new Error(`Failed to fetch latest comic: ${t.status}`);const n=await t.json();if(!n.num||typeof n.num!="number")throw new Error("Invalid comic data received");const r=Math.floor(Math.random()*n.num)+1,e=await(await fetch(`https://corsproxy.io/?https://xkcd.com/${r}/info.0.json`)).json();s.textContent=`#${e.num}`,o.innerHTML=`
 						<h3 class="text-xl font-bold mb-4 text-secondary">
 							${e.title}
 						</h3>
@@ -57,7 +57,7 @@ async function a(){const n=document.getElementById("xkcd-container"),o=document.
 								</a>
 							</div>
 						</div>
-					`;const i=document.getElementById("new-random-btn");i&&i.addEventListener("click",a)}catch(t){console.error("Error fetching XKCD comic:",t),n.innerHTML=`
+					`;const i=document.getElementById("new-random-btn");i&&i.addEventListener("click",a)}catch(t){console.error("Error fetching XKCD comic:",t),o.innerHTML=`
 						<div class="alert alert-error">
 							<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 w-6 h-6" fill="none" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -75,4 +75,4 @@ async function a(){const n=document.getElementById("xkcd-container"),o=document.
 								Try Again
 							</button>
 						</div>
-					`;const s=document.getElementById("try-again-btn");s&&s.addEventListener("click",a),o.textContent="Error"}}document.addEventListener("DOMContentLoaded",()=>{a();const n=new URLSearchParams(window.location.search);if(n.get("subscribed")==="true"){const t=document.getElementById("subscription-success");t&&(t.classList.remove("hidden"),t.scrollIntoView({behavior:"smooth",block:"center"}),window.history.replaceState({},"","/"))}const o=n.get("error");if(o){const t=document.getElementById("subscription-error"),s=document.getElementById("error-message");if(t&&s){const r={validation:"Invalid name or email. Please check your input.",captcha:"Captcha verification failed. Please try again.",server:"Server error. Please try again later."};s.textContent=r[o]||"Something went wrong. Please try again.",t.classList.remove("hidden"),t.scrollIntoView({behavior:"smooth",block:"center"}),window.history.replaceState({},"","/")}}});
+					`;const n=document.getElementById("try-again-btn");n&&n.addEventListener("click",a),s.textContent="Error"}}document.addEventListener("DOMContentLoaded",()=>{a();const o=new URLSearchParams(window.location.search);if(o.get("subscribed")==="true"){const t=document.getElementById("subscription-success");t&&(t.classList.remove("hidden"),t.scrollIntoView({behavior:"smooth",block:"center"}),window.history.replaceState({},"","/"))}const s=o.get("error");if(s){const t=document.getElementById("subscription-error"),n=document.getElementById("error-message");if(t&&n){const r={validation:"Invalid name or email. Please check your input.",captcha:"Captcha verification failed. Please try again.",server:"Server error. Please try again later."};n.textContent=r[s]||"Something went wrong. Please try again.",t.classList.remove("hidden"),t.scrollIntoView({behavior:"smooth",block:"center"}),window.history.replaceState({},"","/")}}});
