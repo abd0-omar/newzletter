@@ -209,14 +209,18 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "YOUR_SI
 					`;
 					numberBadge.textContent = "Loading...";
 
-					// Get latest comic info
+					// Get latest comic info using allorigins proxy
+					const proxyUrl = (url: string) =>
+						`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+
 					const latestResponse = await fetch(
-						"https://corsproxy.io/?https://xkcd.com/info.0.json",
+						proxyUrl("https://xkcd.com/info.0.json"),
 					);
 					if (!latestResponse.ok) {
 						throw new Error(`Failed to fetch latest comic: ${latestResponse.status}`);
 					}
-					const latestComic = await latestResponse.json();
+					const latestData = await latestResponse.json();
+					const latestComic = JSON.parse(latestData.contents);
 					if (!latestComic.num || typeof latestComic.num !== "number") {
 						throw new Error("Invalid comic data received");
 					}
@@ -225,9 +229,10 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "YOUR_SI
 					const randomNum =
 						Math.floor(Math.random() * latestComic.num) + 1;
 					const comicResponse = await fetch(
-						`https://corsproxy.io/?https://xkcd.com/${randomNum}/info.0.json`,
+						proxyUrl(`https://xkcd.com/${randomNum}/info.0.json`),
 					);
-					const comic = await comicResponse.json();
+					const comicData = await comicResponse.json();
+					const comic = JSON.parse(comicData.contents);
 
 					// Update badge
 					numberBadge.textContent = `#${comic.num}`;
