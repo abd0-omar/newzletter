@@ -1,9 +1,11 @@
 application:
-  base_url: "https://talga.ninja"
+  # base_url: "https://talga.ninja"
+  base_url: "https://talga.dev"
 database:
   # make sure to put the path without ".db"
   database_path: "/app/data/newsletter"
 email_client:
-  sender_email: "newzletter@talga.ninja"
+  # sender_email: "newzletter@talga.ninja"
+  sender_email: "newzletter@talga.dev"
   base_url: "https://api.postmarkapp.com"
   timeout_milliseconds: 10000
