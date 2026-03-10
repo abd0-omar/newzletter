@@ -235,10 +235,17 @@ async fn subscribe_sends_a_confirmation_email_with_a_link() {
 
     // Assert
     let email_request = &app.email_server.received_requests().await.unwrap()[0];
+    let body: serde_json::Value = serde_json::from_slice(&email_request.body).unwrap();
     let confirmation_links = app.get_confirmation_links(email_request);
 
     // The two links should be identical
     assert_eq!(confirmation_links.html, confirmation_links.plain_text);
+    assert_eq!(
+        body["Subject"].as_str().unwrap(),
+        "Please confirm your Newzletter subscription"
+    );
+    assert!(!body["HtmlBody"].as_str().unwrap().contains("Willkommen"));
+    assert!(!body["TextBody"].as_str().unwrap().contains("Willkommen"));
 
     app.cleanup_test_db().await.unwrap();
 }

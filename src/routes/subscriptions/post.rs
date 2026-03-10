@@ -188,17 +188,42 @@ pub async fn send_confirmation_email(
         base_url, subscription_token
     );
     let plain_body = format!(
-        "Willkommen zu unserem newzletter!\nVisit {} to confirm your subscription.",
+        "Thanks for subscribing to Newzletter!\n\
+Please confirm your email address by visiting the link below:\n\
+{}\n\n\
+If you did not subscribe, you can safely ignore this email.",
         confirmation_link
     );
     let html_body = format!(
-        "Willkommen zu unserem newzletter!<br />Click <a href=\"{}\">here</a> to confirm your subscription.",
+        r#"<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:24px;background-color:#f3f4f6;font-family:Arial,sans-serif;color:#111827;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:8px;padding:32px;">
+            <tr>
+              <td>
+                <h1 style="margin:0 0 16px;font-size:24px;line-height:1.4;">Confirm your subscription</h1>
+                <p style="margin:0 0 16px;line-height:1.6;">Thanks for subscribing to Newzletter. Please confirm your email address to start receiving updates.</p>
+                <p style="margin:0 0 24px;">
+                  <a href="{}" style="display:inline-block;padding:12px 20px;background:#2563eb;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:600;">Confirm my email</a>
+                </p>
+                <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.5;">If you did not subscribe, you can safely ignore this email.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>"#,
         confirmation_link
     );
     email_client
         .send_email(
             &new_subscriber.email,
-            "Willkommen!",
+            "Please confirm your Newzletter subscription",
             &html_body,
             &plain_body,
         )
