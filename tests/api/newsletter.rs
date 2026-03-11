@@ -4,9 +4,17 @@ use wiremock::matchers::{any, method, path};
 use wiremock::{Mock, ResponseTemplate};
 
 async fn create_unconfirmed_subscriber(app: &TestApp) -> ConfirmationLinks {
+    create_unconfirmed_subscriber_with_email(app, format!("{}@example.com", uuid::Uuid::new_v4()))
+        .await
+}
+
+async fn create_unconfirmed_subscriber_with_email(
+    app: &TestApp,
+    email: String,
+) -> ConfirmationLinks {
     let body = FormData {
         name: Some("abood".to_string()),
-        email: Some("3la_el_7doood@yahoo.com".to_string()),
+        email: Some(email),
         cf_turnstile_response: Some("test-token".to_string()),
     };
 
@@ -33,7 +41,14 @@ async fn create_unconfirmed_subscriber(app: &TestApp) -> ConfirmationLinks {
 }
 
 async fn create_confirmed_subscriber(app: &TestApp) {
-    let confirmation_link = create_unconfirmed_subscriber(app).await.html;
+    create_confirmed_subscriber_with_email(app, format!("{}@example.com", uuid::Uuid::new_v4()))
+        .await;
+}
+
+async fn create_confirmed_subscriber_with_email(app: &TestApp, email: String) {
+    let confirmation_link = create_unconfirmed_subscriber_with_email(app, email)
+        .await
+        .html;
     reqwest::get(confirmation_link)
         .await
         .unwrap()
@@ -102,6 +117,80 @@ async fn newsletters_are_delivered_to_confirmed_subscribers() {
     assert!(html_page.contains("<p><i>The newsletter issue has been published!</i></p>"));
     app.dispatch_all_pending_emails().await;
     // Mock verifies on Drop that we have sent the newsletter email
+
+    app.cleanup_test_db().await.unwrap()
+}
+
+#[tokio::test]
+async fn newsletters_are_delivered_to_all_confirmed_subscribers() {
+    // Arrange
+    let app = spawn_app().await;
+    create_confirmed_subscriber_with_email(&app, "first@example.com".to_string()).await;
+    create_confirmed_subscriber_with_email(&app, "second@example.com".to_string()).await;
+    app.test_user.login(&app).await;
+
+    Mock::given(path("/email"))
+        .and(method("POST"))
+        .respond_with(ResponseTemplate::new(200))
+        .expect(2)
+        .mount(&app.email_server)
+        .await;
+
+    // Act
+    let newsletter_request_body = serde_json::json!({
+        "title": "Newsletter title",
+        "text_content": "Newsletter body as plain text",
+        "html_content": "<p>Newsletter body as HTML</p>",
+        "idempotency_key": uuid::Uuid::new_v4().to_string(),
+    });
+    let response = app.post_publish_newsletter(&newsletter_request_body).await;
+
+    // Assert
+    assert_is_redirect_to(&response, "/admin/newsletters");
+    app.dispatch_all_pending_emails().await;
+
+    app.cleanup_test_db().await.unwrap()
+}
+
+#[tokio::test]
+async fn newsletter_titles_do_not_need_to_be_unique() {
+    // Arrange
+    let app = spawn_app().await;
+    create_confirmed_subscriber(&app).await;
+    app.test_user.login(&app).await;
+
+    Mock::given(path("/email"))
+        .and(method("POST"))
+        .respond_with(ResponseTemplate::new(200))
+        .expect(2)
+        .mount(&app.email_server)
+        .await;
+
+    let first_newsletter_request_body = serde_json::json!({
+        "title": "Same title",
+        "text_content": "Newsletter body as plain text",
+        "html_content": "<p>Newsletter body as HTML</p>",
+        "idempotency_key": uuid::Uuid::new_v4().to_string(),
+    });
+    let second_newsletter_request_body = serde_json::json!({
+        "title": "Same title",
+        "text_content": "Another newsletter body as plain text",
+        "html_content": "<p>Another newsletter body as HTML</p>",
+        "idempotency_key": uuid::Uuid::new_v4().to_string(),
+    });
+
+    // Act
+    let first_response = app
+        .post_publish_newsletter(&first_newsletter_request_body)
+        .await;
+    let second_response = app
+        .post_publish_newsletter(&second_newsletter_request_body)
+        .await;
+
+    // Assert
+    assert_is_redirect_to(&first_response, "/admin/newsletters");
+    assert_is_redirect_to(&second_response, "/admin/newsletters");
+    app.dispatch_all_pending_emails().await;
 
     app.cleanup_test_db().await.unwrap()
 }
