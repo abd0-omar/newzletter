@@ -5,6 +5,7 @@ mod home;
 mod login;
 mod subscriptions;
 mod subscriptions_confirm;
+mod xkcd_proxy;
 
 pub use admin::*;
 pub use blog::*;
@@ -13,3 +14,4 @@ pub use home::*;
 pub use login::*;
 pub use subscriptions::*;
 pub use subscriptions_confirm::*;
+pub use xkcd_proxy::*;

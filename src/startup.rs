@@ -24,7 +24,7 @@ use tower_sessions_redis_store::{
 use crate::routes::{
     admin_dashboard, blog_index, blog_post, change_password, change_password_form, confirm,
     health_check, home, log_out, login, login_form, publish_newsletter, publish_newsletter_form,
-    subscribe,
+    subscribe, xkcd_proxy,
 };
 use crate::{
     authentication::reject_anonymous_users,
@@ -105,6 +105,7 @@ pub async fn run(
         .route("/subscriptions/confirm", get(confirm))
         .route("/blog", get(blog_index))
         .route("/blog/{slug}", get(blog_post))
+        .route("/api/xkcd", get(xkcd_proxy))
         .nest("/admin", admin_routes)
         .fallback_service(ServeDir::new("frontend/dist"))
         .layer(

@@ -209,28 +209,34 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "YOUR_SI
 					`;
 					numberBadge.textContent = "Loading...";
 
-					// Fetch with CORS proxy fallbacks
-					async function fetchWithProxy(url: string): Promise<any> {
+					// Fetch XKCD comic data — uses our own backend proxy first, then third-party CORS proxies as fallback
+					async function fetchXkcd(num?: number): Promise<any> {
+						// Primary: our own backend proxy (no CORS issues)
+						const apiUrl = num ? `/api/xkcd?num=${num}` : `/api/xkcd`;
+						try {
+							const response = await fetch(apiUrl);
+							if (response.ok) return await response.json();
+						} catch (_) { /* fall through to proxies */ }
+
+						// Fallback: third-party CORS proxies
+						const targetUrl = num
+							? `https://xkcd.com/${num}/info.0.json`
+							: `https://xkcd.com/info.0.json`;
 						const proxies = [
-							(u: string) => ({ url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`, parse: (r: Response) => r.json() }),
-							(u: string) => ({ url: `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`, parse: (r: Response) => r.json() }),
+							`https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`,
+							`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+							`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
 						];
-						
-						for (const proxy of proxies) {
+						for (const proxyUrl of proxies) {
 							try {
-								const { url: proxyUrl, parse } = proxy(url);
 								const response = await fetch(proxyUrl);
-								if (response.ok) {
-									return await parse(response);
-								}
-							} catch (e) {
-								continue;
-							}
+								if (response.ok) return await response.json();
+							} catch (_) { continue; }
 						}
-						throw new Error("All proxies failed");
+						throw new Error("All sources failed");
 					}
 
-					const latestComic = await fetchWithProxy("https://xkcd.com/info.0.json");
+					const latestComic = await fetchXkcd();
 					if (!latestComic.num || typeof latestComic.num !== "number") {
 						throw new Error("Invalid comic data received");
 					}
@@ -238,7 +244,7 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "YOUR_SI
 					// Get random comic
 					const randomNum =
 						Math.floor(Math.random() * latestComic.num) + 1;
-					const comic = await fetchWithProxy(`https://xkcd.com/${randomNum}/info.0.json`);
+					const comic = await fetchXkcd(randomNum);
 
 					// Update badge
 					numberBadge.textContent = `#${comic.num}`;
