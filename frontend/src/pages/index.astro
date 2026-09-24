@@ -3,196 +3,416 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+import { getCollection } from "astro:content";
+import FormattedDate from "../components/FormattedDate.astro";
+import { Image } from "astro:assets";
+import ProfileImage from "../assets/Abdelrahman-Omar-graduate.jpeg";
 
-const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "YOUR_SITE_KEY_HERE";
+const recentPosts = (await getCollection("blog"))
+	.sort((a, b) => (b.data.pubDate?.valueOf() ?? 0) - (a.data.pubDate?.valueOf() ?? 0))
+	.slice(0, 2);
+
+const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAACL1FFd6ROeWtqd6";
 ---
 
 <!doctype html>
 <html lang="en" data-theme="nord-dark">
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<BaseHead
+			title={`${SITE_TITLE} — Rust Backend & Distributed Systems Engineer`}
+			description="Portfolio of Abdelrahman Omar, Software Engineer specializing in Rust, distributed systems, high-throughput APIs, and cloud infrastructure."
+		/>
 		<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 	</head>
-	<body class="min-h-screen bg-base-100">
+	<body class="min-h-screen bg-base-100 text-base-content selection:bg-primary selection:text-primary-content">
 		<Header />
 
-		<!-- Hero Section -->
-		<div class="hero min-h-96 bg-base-200">
-			<div class="hero-content text-center">
-				<div class="max-w-md">
-					<h1 class="text-5xl font-bold text-primary mb-6">
-						Welcome!
+		<main class="container mx-auto max-w-4xl px-4 py-8 sm:py-12 space-y-16">
+			<!-- Hero Section (Executive Developer Pitch) -->
+			<section class="flex flex-col-reverse md:flex-row items-center justify-between gap-8 pt-4 pb-2">
+				<div class="space-y-4 max-w-2xl text-center md:text-left">
+					<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-base-200 border border-base-300 text-xs font-semibold text-accent shadow-sm">
+						<span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+						Open to Full-Time & Remote Backend / Rust Roles
+					</div>
+
+					<h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-base-content leading-tight">
+						Hi, I'm <span class="text-primary">Abdelrahman Omar</span>
 					</h1>
-				</div>
-			</div>
-		</div>
 
-		<main class="container mx-auto max-w-4xl px-4 py-12">
-			<!-- Random XKCD Comic Section -->
-			<div class="divider text-lg font-semibold">Random Comic</div>
-			<div class="card bg-base-100 shadow-xl border border-base-300">
-				<div class="card-body">
-					<div class="flex items-center justify-between mb-6">
-						<h2 class="card-title text-2xl text-primary">
-							Random XKCD Comic
-						</h2>
-						<div
-							class="badge badge-outline badge-lg"
-							id="comic-number"
-						>
-							Loading...
-						</div>
-					</div>
-
-					<div class="text-center" id="xkcd-container">
-						<div class="flex justify-center items-center min-h-64">
-							<span
-								class="loading loading-spinner loading-lg text-primary"
-							></span>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Newsletter Signup Section -->
-			<div class="divider text-lg font-semibold mt-16">Newsletter</div>
-
-			<!-- Success Alert (hidden by default, shown via JS when ?subscribed=true) -->
-			<div id="subscription-success" class="alert alert-success mb-6 hidden">
-				<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-				</svg>
-				<span>Thanks for subscribing! Please check your email to confirm your subscription.</span>
-			</div>
-
-			<!-- Error Alert (hidden by default, shown via JS when ?error=...) -->
-			<div id="subscription-error" class="alert alert-error mb-6 hidden">
-				<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-				</svg>
-				<span id="error-message">Something went wrong. Please try again.</span>
-			</div>
-
-			<div
-				class="card bg-gradient-to-r from-primary to-secondary text-primary-content shadow-xl"
-			>
-				<div class="card-body">
-					<div class="text-center mb-2">
-						<h2 class="card-title text-3xl justify-center mb-4">
-							📧 Built by following the Zero To Production in Rust
-							book
-						</h2>
-					<p class="text-lg text-primary-content/90 mb-4">
-						This newsletter was created as a learning project to
-						explore Rust and backend development. It is included
-						here only as a showcase.
+					<p class="text-xl sm:text-2xl font-medium text-secondary">
+						Software Engineer &middot; Rust, Distributed Systems & APIs
 					</p>
-				</div>
 
-				<!-- Subscription Form -->
-				<form
-					action="/subscriptions"
-					method="post"
-					class="space-y-6"
-				>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-							<div class="form-control">
-								<label class="label" for="name">
-									<span
-										class="label-text text-primary-content font-semibold"
-									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											class="w-4 h-4 inline mr-2"
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke="currentColor"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-											></path>
-										</svg>
-										Your Name
-									</span>
-								</label>
-								<input
-									type="text"
-									id="name"
-									name="name"
-									placeholder="Enter your full name"
-									required
-									class="input input-bordered input-lg w-full bg-base-100 text-base-content"
-								/>
-							</div>
+					<p class="text-base sm:text-lg text-base-content/85 leading-relaxed">
+						I engineer production-grade backend systems, asynchronous data pipelines, and containerized cloud services. Previously built backend architectures at <strong>espace</strong>, <strong>Beseha</strong>, and <strong>Tawuno</strong>. Core contributor to <strong>Stakpak</strong> (acquired by Vercel).
+					</p>
 
-							<div class="form-control">
-								<label class="label" for="email">
-									<span
-										class="label-text text-primary-content font-semibold"
-									>
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											class="w-4 h-4 inline mr-2"
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke="currentColor"
-										>
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2v10a2 2 0 002 2z"
-											></path>
-										</svg>
-										Email Address
-									</span>
-								</label>
-								<input
-									type="email"
-									id="email"
-									name="email"
-									placeholder="your.email@example.com"
-									required
-									class="input input-bordered input-lg w-full bg-base-100 text-base-content"
-								/>
-							</div>
-						</div>
+					<!-- Action Buttons -->
+					<div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-3">
+						<a
+							href="https://drive.google.com/file/d/1_-vuaTUpLmBy8EY4ivTjZRMsQOx65ogk/view?usp=drive_link"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="btn btn-primary gap-2 text-primary-content shadow-md hover:shadow-lg transition-all"
+						>
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+							</svg>
+							View CV
+						</a>
 
-						<div class="flex justify-center mb-4">
-							<div class="cf-turnstile" data-sitekey="0x4AAAAAACL1FFd6ROeWtqd6" data-theme="dark"></div>
-						</div>
+						<a
+							href="/about"
+							class="btn btn-neutral gap-2 border border-base-300 hover:border-primary/40"
+						>
+							About & Experience &rarr;
+						</a>
 
-						<div class="card-actions justify-center">
-							<button
-								type="submit"
-								class="btn btn-neutral btn-lg w-full md:w-auto px-12"
+						<div class="flex items-center gap-1.5 pl-1">
+							<a
+								href="https://github.com/abd0-omar"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="btn btn-ghost btn-circle btn-sm"
+								aria-label="GitHub Profile"
 							>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="w-5 h-5 mr-2"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-									></path>
+								<svg class="w-5 h-5 fill-current" viewBox="0 0 16 16" aria-hidden="true">
+									<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
 								</svg>
-								Subscribe
-							</button>
+							</a>
+
+							<a
+								href="https://www.linkedin.com/in/abdelrahman-omar-dev/"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="btn btn-ghost btn-circle btn-sm"
+								aria-label="LinkedIn Profile"
+							>
+								<svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+									<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path>
+								</svg>
+							</a>
+
+							<a
+								href="mailto:abdelrahman.omar.elgendy@gmail.com"
+								class="btn btn-ghost btn-circle btn-sm"
+								aria-label="Send Email"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+								</svg>
+							</a>
 						</div>
-					</form>
+					</div>
 				</div>
-			</div>
+
+				<div class="avatar shrink-0">
+					<div class="w-36 h-36 sm:w-44 sm:h-44 rounded-2xl ring-4 ring-primary/80 ring-offset-base-100 ring-offset-4 overflow-hidden shadow-2xl">
+						<div class="w-full h-full -mt-4">
+							<Image
+								src={ProfileImage}
+								alt="Abdelrahman Omar"
+								width={180}
+								height={180}
+								class="object-cover w-full h-full"
+								loading="eager"
+							/>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Impact Metrics Strip -->
+			<section class="grid grid-cols-2 md:grid-cols-4 gap-3">
+				<div class="bg-base-200/70 border border-base-300 rounded-2xl p-4 text-center shadow-sm">
+					<div class="text-2xl sm:text-3xl font-extrabold text-primary mb-1">3+</div>
+					<div class="text-xs sm:text-sm font-semibold text-base-content">Production Roles</div>
+					<div class="text-[11px] text-base-content/60 mt-0.5">espace, Beseha, Tawuno</div>
+				</div>
+
+				<div class="bg-base-200/70 border border-base-300 rounded-2xl p-4 text-center shadow-sm">
+					<div class="text-2xl sm:text-3xl font-extrabold text-primary mb-1">700+</div>
+					<div class="text-xs sm:text-sm font-semibold text-base-content">LeetCode Solved</div>
+					<div class="text-[11px] text-base-content/60 mt-0.5">Algorithmic Foundation</div>
+				</div>
+
+				<div class="bg-base-200/70 border border-base-300 rounded-2xl p-4 text-center shadow-sm">
+					<div class="text-2xl sm:text-3xl font-extrabold text-secondary mb-1">Vercel Acquired</div>
+					<div class="text-xs sm:text-sm font-semibold text-base-content">Stakpak Contributor</div>
+					<div class="text-[11px] text-base-content/60 mt-0.5">Tokio Actor Concurrency</div>
+				</div>
+
+				<div class="bg-base-200/70 border border-base-300 rounded-2xl p-4 text-center shadow-sm">
+					<div class="text-2xl sm:text-3xl font-extrabold text-accent mb-1">100% Rust</div>
+					<div class="text-xs sm:text-sm font-semibold text-base-content">Custom Backend</div>
+					<div class="text-[11px] text-base-content/60 mt-0.5">Axum + SQLite S3 on Fly.io</div>
+				</div>
+			</section>
+
+			<!-- Featured Engineering Case Studies -->
+			<section class="space-y-6">
+				<div class="flex items-center justify-between">
+					<h2 class="text-2xl sm:text-3xl font-bold text-primary flex items-center gap-2">
+						<span class="text-secondary">&gt;</span> Featured Engineering Work
+					</h2>
+					<a href="/about" class="text-xs sm:text-sm link link-primary hover:underline">
+						View full background &rarr;
+					</a>
+				</div>
+
+				<div class="grid grid-cols-1 gap-6">
+					<!-- Stakpak Highlight -->
+					<div class="bg-base-200/60 border border-base-300 hover:border-primary/40 transition-all rounded-2xl p-6 sm:p-7 shadow-sm">
+						<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+							<div class="flex items-center gap-2.5">
+								<h3 class="text-xl font-bold text-base-content">
+									Stakpak <span class="text-sm font-normal text-base-content/70">(Acquired by Vercel)</span>
+								</h3>
+								<span class="badge badge-secondary badge-sm font-semibold">Open Source</span>
+							</div>
+							<div class="flex items-center gap-3 text-xs sm:text-sm">
+								<a
+									href="https://github.com/stakpak/agent/pull/354"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="link link-primary inline-flex items-center gap-1 font-semibold hover:underline"
+								>
+									PR #354
+									<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+									</svg>
+								</a>
+								<span class="text-base-content/40">&middot;</span>
+								<a
+									href="https://github.com/stakpak/agent/pulls?q=is%3Apr+author%3Aabd0-omar+is%3Amerged"
+									target="_blank"
+									rel="noopener noreferrer"
+									class="link link-primary inline-flex items-center gap-1 font-semibold hover:underline"
+								>
+									6+ Merged PRs
+									<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+									</svg>
+								</a>
+							</div>
+						</div>
+
+						<p class="text-sm text-base-content/80 mb-4 leading-relaxed">
+							Contributed to an AI DevOps agent built in Rust used across CLI/TUI and Model Context Protocol (MCP) environments. Re-architected secret redaction logic using <strong>actor-model concurrency via Tokio channels</strong> to guarantee race-free, thread-safe sanitization across asynchronous worker tasks.
+						</p>
+
+						<div class="flex flex-wrap gap-1.5">
+							<span class="badge badge-primary badge-outline badge-sm text-xs">Rust</span>
+							<span class="badge badge-outline badge-sm text-xs">Tokio</span>
+							<span class="badge badge-outline badge-sm text-xs">Actor Model</span>
+							<span class="badge badge-outline badge-sm text-xs">MCP Protocol</span>
+							<span class="badge badge-outline badge-sm text-xs">DevOps AI</span>
+							<span class="badge badge-outline badge-sm text-xs">Security Hardening</span>
+						</div>
+					</div>
+
+					<!-- Newsletter Backend Highlight -->
+					<div class="bg-base-200/60 border border-base-300 hover:border-primary/40 transition-all rounded-2xl p-6 sm:p-7 shadow-sm">
+						<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+							<div class="flex items-center gap-2.5">
+								<h3 class="text-xl font-bold text-base-content">
+									Newsletter Email API & Worker Engine
+								</h3>
+								<span class="badge badge-accent badge-sm font-semibold">Powers This Site</span>
+							</div>
+							<a
+								href="https://github.com/abd0-omar/newzletter"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="link link-primary inline-flex items-center gap-1 text-xs sm:text-sm font-semibold hover:underline"
+							>
+								GitHub Repository
+								<svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+								</svg>
+							</a>
+						</div>
+
+						<p class="text-sm text-base-content/80 mb-4 leading-relaxed">
+							Production-ready newsletter delivery engine inspired by Luca Palmieri's <em>Zero To Production in Rust</em>. Features double opt-in email validation, race-safe idempotent publishing, an asynchronous background queue worker with transactional task enqueueing, and automated SQLite continuous replication to AWS S3 via LiteStream on Fly.io.
+						</p>
+
+						<div class="flex flex-wrap gap-1.5">
+							<span class="badge badge-primary badge-outline badge-sm text-xs">Rust</span>
+							<span class="badge badge-outline badge-sm text-xs">Axum</span>
+							<span class="badge badge-outline badge-sm text-xs">SQLx</span>
+							<span class="badge badge-outline badge-sm text-xs">SQLite</span>
+							<span class="badge badge-outline badge-sm text-xs">Redis</span>
+							<span class="badge badge-outline badge-sm text-xs">LiteStream S3</span>
+							<span class="badge badge-outline badge-sm text-xs">Fly.io</span>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Recent Technical Writing -->
+			{
+				recentPosts.length > 0 && (
+					<section class="space-y-6">
+						<div class="flex items-center justify-between">
+							<h2 class="text-2xl sm:text-3xl font-bold text-primary flex items-center gap-2">
+								<span class="text-secondary">&gt;</span> Technical Writing & Systems Architecture
+							</h2>
+							<a href="/blog" class="text-xs sm:text-sm link link-primary hover:underline">
+								All articles &rarr;
+							</a>
+						</div>
+
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+							{recentPosts.map((post) => (
+								<a
+									href={`/blog/${post.id}/`}
+									class="card bg-base-200/60 border border-base-300 hover:border-primary/40 transition-all shadow-sm hover:shadow-md flex flex-col justify-between"
+								>
+									{post.data.heroImage && (
+										<figure class="w-full h-44 overflow-hidden border-b border-base-300">
+											<Image
+												width={600}
+												height={300}
+												src={post.data.heroImage}
+												alt={post.data.title}
+												class="w-full h-full object-cover"
+											/>
+										</figure>
+									)}
+									<div class="card-body p-5">
+										<div class="flex items-center gap-2 mb-1">
+											<span class="badge badge-primary badge-sm text-xs">
+												<FormattedDate date={post.data.pubDate ?? new Date()} />
+											</span>
+										</div>
+										<h3 class="card-title text-lg font-bold text-base-content hover:text-primary transition-colors">
+											{post.data.title}
+										</h3>
+										<p class="text-sm text-base-content/75 line-clamp-2">
+											{post.data.description}
+										</p>
+									</div>
+								</a>
+							))}
+						</div>
+					</section>
+				)
+			}
+
+			<!-- Live System Demo (Newsletter Engine) -->
+			<section class="space-y-4">
+				<div class="flex items-center gap-2">
+					<h2 class="text-2xl sm:text-3xl font-bold text-primary flex items-center gap-2">
+						<span class="text-secondary">&gt;</span> Live Backend Architecture Demo
+					</h2>
+				</div>
+
+				<!-- Success Alert -->
+				<div id="subscription-success" class="alert alert-success shadow-lg hidden">
+					<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+					<span>Verification email dispatched! Please check your inbox to complete the double opt-in handshake.</span>
+				</div>
+
+				<!-- Error Alert -->
+				<div id="subscription-error" class="alert alert-error shadow-lg hidden">
+					<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+					</svg>
+					<span id="error-message">Something went wrong. Please verify your input.</span>
+				</div>
+
+				<div class="card bg-gradient-to-r from-base-200 via-base-200 to-base-300 border border-base-300 text-base-content shadow-xl">
+					<div class="card-body p-6 sm:p-8">
+						<div class="text-center max-w-xl mx-auto mb-6">
+							<h3 class="card-title text-2xl justify-center text-primary mb-2">
+								Test the Live Rust Service
+							</h3>
+							<p class="text-sm text-base-content/80 leading-relaxed">
+								This website is backed by a custom Axum service deployed on Fly.io. Enter your email below to test the double opt-in handshake and asynchronous queue worker running live on this node.
+							</p>
+						</div>
+
+						<form action="/subscriptions" method="post" class="space-y-5 max-w-xl mx-auto w-full">
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<div class="form-control">
+									<label class="label py-1" for="name">
+										<span class="label-text text-xs font-semibold text-base-content/80">Your Name</span>
+									</label>
+									<input
+										type="text"
+										id="name"
+										name="name"
+										placeholder="Abdelrahman"
+										required
+										class="input input-bordered w-full bg-base-100 text-base-content"
+									/>
+								</div>
+
+								<div class="form-control">
+									<label class="label py-1" for="email">
+										<span class="label-text text-xs font-semibold text-base-content/80">Email Address</span>
+									</label>
+									<input
+										type="email"
+										id="email"
+										name="email"
+										placeholder="visitor@example.com"
+										required
+										class="input input-bordered w-full bg-base-100 text-base-content"
+									/>
+								</div>
+							</div>
+
+							<div class="flex justify-center pt-1">
+								<div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-theme="dark"></div>
+							</div>
+
+							<div class="card-actions justify-center">
+								<button type="submit" class="btn btn-primary px-8 shadow-md">
+									<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+									</svg>
+									Dispatch Test Verification
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</section>
+
+			<!-- Random XKCD Comic Section -->
+			<section class="space-y-4 pt-4 border-t border-base-300">
+				<div class="card bg-base-200/50 border border-base-300 shadow-sm">
+					<div class="card-body p-6">
+						<div class="flex items-center justify-between mb-4">
+							<div class="flex items-center gap-2">
+								<h3 class="text-lg font-bold text-base-content">
+									Random XKCD Comic
+								</h3>
+							</div>
+							<div class="badge badge-outline text-xs" id="comic-number">
+								Loading...
+							</div>
+						</div>
+
+						<div class="text-center" id="xkcd-container">
+							<div class="flex justify-center items-center min-h-48">
+								<span class="loading loading-spinner loading-md text-primary"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
 		</main>
+
 		<Footer />
 
+		<!-- Scripts for XKCD & Form Handling -->
 		<script>
 			async function loadRandomXKCD() {
 				const container = document.getElementById("xkcd-container");
@@ -201,24 +421,20 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "YOUR_SI
 				if (!container || !numberBadge) return;
 
 				try {
-					// Show loading state
 					container.innerHTML = `
-						<div class="flex justify-center items-center min-h-64">
-							<span class="loading loading-spinner loading-lg text-primary"></span>
+						<div class="flex justify-center items-center min-h-48">
+							<span class="loading loading-spinner loading-md text-primary"></span>
 						</div>
 					`;
 					numberBadge.textContent = "Loading...";
 
-					// Fetch XKCD comic data — uses our own backend proxy first, then third-party CORS proxies as fallback
 					async function fetchXkcd(num?: number): Promise<any> {
-						// Primary: our own backend proxy (no CORS issues)
 						const apiUrl = num ? `/api/xkcd?num=${num}` : `/api/xkcd`;
 						try {
 							const response = await fetch(apiUrl);
 							if (response.ok) return await response.json();
 						} catch (_) { /* fall through to proxies */ }
 
-						// Fallback: third-party CORS proxies
 						const targetUrl = num
 							? `https://xkcd.com/${num}/info.0.json`
 							: `https://xkcd.com/info.0.json`;
@@ -241,118 +457,79 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "YOUR_SI
 						throw new Error("Invalid comic data received");
 					}
 
-					// Get random comic
-					const randomNum =
-						Math.floor(Math.random() * latestComic.num) + 1;
+					const randomNum = Math.floor(Math.random() * latestComic.num) + 1;
 					const comic = await fetchXkcd(randomNum);
 
-					// Update badge
 					numberBadge.textContent = `#${comic.num}`;
 
-					// Update container with comic content
 					container.innerHTML = `
-						<h3 class="text-xl font-bold mb-4 text-secondary">
+						<h4 class="text-base font-bold mb-3 text-secondary">
 							${comic.title}
-						</h3>
+						</h4>
 						
-						<div class="mockup-browser bg-base-300 border border-base-300 mb-6">
-							<div class="mockup-browser-toolbar">
-								<div class="input text-sm">xkcd.com/${comic.num}</div>
-							</div>
-							<div class="bg-base-100 px-6 py-8">
-								<img
-									src="${comic.img}"
-									alt="${comic.alt}"
-									class="mx-auto max-w-full h-auto"
-									loading="lazy"
-								/>
-							</div>
+						<div class="bg-base-100 rounded-xl p-4 border border-base-300 max-w-xl mx-auto mb-4">
+							<img
+								src="${comic.img}"
+								alt="${comic.alt}"
+								class="mx-auto max-h-80 w-auto object-contain rounded"
+								loading="lazy"
+							/>
 						</div>
 						
-						<div class="alert alert-info shadow-lg mb-6">
-							<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-							</svg>
-							<div class="text-left">
-								<h4 class="font-semibold">Alt Text:</h4>
-								<p class="text-sm">${comic.alt}</p>
-							</div>
-						</div>
+						<p class="text-xs text-base-content/70 italic max-w-lg mx-auto mb-4">
+							"${comic.alt}"
+						</p>
 						
-						<div class="card-actions justify-center">
-							<div class="join">
-								<div class="tooltip" data-tip="Published Date">
-									<button class="btn join-item btn-outline btn-sm">
-										📅 ${comic.day}/${comic.month}/${comic.year}
-									</button>
-								</div>
-								<button class="btn join-item btn-secondary btn-sm" id="new-random-btn">
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-current mr-1">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-									</svg>
-									New Random
-								</button>
-								<a
-									href="https://xkcd.com/${comic.num}"
-									target="_blank"
-									rel="noopener noreferrer"
-									class="btn join-item btn-primary btn-sm"
-								>
-									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-current">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-									</svg>
-									View on XKCD
-								</a>
-							</div>
+						<div class="flex justify-center items-center gap-2">
+							<button class="btn btn-secondary btn-sm" id="new-random-btn">
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-3.5 h-3.5 stroke-current mr-1">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+								</svg>
+								New Random
+							</button>
+							<a
+								href="https://xkcd.com/${comic.num}"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="btn btn-outline btn-sm"
+							>
+								View on XKCD
+								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-3.5 h-3.5 stroke-current ml-1">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+								</svg>
+							</a>
 						</div>
 					`;
 
-					// Add event listener for the "New Random" button
-					const newRandomBtn =
-						document.getElementById("new-random-btn");
+					const newRandomBtn = document.getElementById("new-random-btn");
 					if (newRandomBtn) {
 						newRandomBtn.addEventListener("click", loadRandomXKCD);
 					}
 				} catch (error) {
 					console.error("Error fetching XKCD comic:", error);
 					container.innerHTML = `
-						<div class="alert alert-error">
-							<svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 w-6 h-6" fill="none" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-							</svg>
-							<div>
-								<h3 class="font-bold">Failed to load XKCD comic</h3>
-								<p class="text-sm">Please check your internet connection and try again.</p>
-							</div>
+						<div class="alert alert-warning text-xs">
+							<span>Unable to fetch comic at this moment.</span>
 						</div>
-						<div class="mt-4 text-center">
-							<button class="btn btn-primary" id="try-again-btn">
-								<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-4 h-4 stroke-current mr-1">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-								</svg>
+						<div class="mt-2 text-center">
+							<button class="btn btn-outline btn-xs" id="try-again-btn">
 								Try Again
 							</button>
 						</div>
 					`;
-
-					// Add event listener for the "Try Again" button
-					const tryAgainBtn =
-						document.getElementById("try-again-btn");
+					const tryAgainBtn = document.getElementById("try-again-btn");
 					if (tryAgainBtn) {
 						tryAgainBtn.addEventListener("click", loadRandomXKCD);
 					}
-
-					numberBadge.textContent = "Error";
+					numberBadge.textContent = "Offline";
 				}
 			}
 
-			// Load comic when page loads
 			document.addEventListener("DOMContentLoaded", () => {
 				loadRandomXKCD();
 
 				const urlParams = new URLSearchParams(window.location.search);
 
-				// Show success message if redirected after subscription
 				if (urlParams.get('subscribed') === 'true') {
 					const successAlert = document.getElementById('subscription-success');
 					if (successAlert) {
@@ -362,13 +539,12 @@ const TURNSTILE_SITE_KEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || "YOUR_SI
 					}
 				}
 
-				// Show error message if something went wrong
 				const error = urlParams.get('error');
 				if (error) {
 					const errorAlert = document.getElementById('subscription-error');
 					const errorMessage = document.getElementById('error-message');
 					if (errorAlert && errorMessage) {
-						const messages = {
+						const messages: Record<string, string> = {
 							'validation': 'Invalid name or email. Please check your input.',
 							'captcha': 'Captcha verification failed. Please try again.',
 							'server': 'Server error. Please try again later.'
